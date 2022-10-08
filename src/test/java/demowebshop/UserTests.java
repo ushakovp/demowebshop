@@ -61,10 +61,7 @@ public class UserTests extends TestBase {
             $("#register-button").click();
         });
 
-        step("Проверяем, что пользователь зарегистрирован", () -> {
-            $(".result").should(appear).shouldHave(text("Your registration completed"));
-            $(".account").shouldBe(visible).shouldHave(text(email));
-        });
+        step("Проверяем, что пользователь зарегистрирован", this::checkUserCreated);
     }
 
     @Test
@@ -77,32 +74,37 @@ public class UserTests extends TestBase {
     void registerNewUserAPITest() {
         String authCookieName = "NOPCOMMERCE.AUTH";
 
-        step("Регистрируем пользователя через API ", () -> {
-            String authCookieValue = given()
-                    .when()
-                    .contentType("application/x-www-form-urlencoded; charset=utf-8")
-                    .formParam("__RequestVerificationToken", "10QcxkN4-Gk5PEeZlTrtVTuN7xtnRi_RY4ssN4Kd1kn--wsjFIdx3MtZG3cs6EsIYcWSCd3dIikpNcaAeVkJyMaRx50q_u84GfmcWQFqcqw1")
-                    .formParam("FirstName", firstName)
-                    .formParam("LastName", lastName)
-                    .formParam("Email", email)
-                    .formParam("Password", password)
-                    .formParam("ConfirmPassword", password)
-                    .cookie("__RequestVerificationToken", "at9THwDl4iOCtU40qL9aL87W4x6vnP7C7vDFXJ6VVruf0QlYjJGo4vKOOZ37as2KBsbYUCMAENIXnFqvW6QHp-85oL4JZadn5TQu5MPCDv41;")
-                    .post("/register")
-                    .then()
-                    .extract().cookie(authCookieName);
+        String authCookieValue = step("Регистрируем пользователя через API ", () -> given()
+                .when()
+                .contentType("application/x-www-form-urlencoded; charset=utf-8")
+                .formParam("__RequestVerificationToken", "10QcxkN4-Gk5PEeZlTrtVTuN7xtnRi_RY4ssN4Kd1kn--wsjFIdx3MtZG3cs6EsIYcWSCd3dIikpNcaAeVkJyMaRx50q_u84GfmcWQFqcqw1")
+                .formParam("FirstName", firstName)
+                .formParam("LastName", lastName)
+                .formParam("Email", email)
+                .formParam("Password", password)
+                .formParam("ConfirmPassword", password)
+                .cookie("__RequestVerificationToken", "at9THwDl4iOCtU40qL9aL87W4x6vnP7C7vDFXJ6VVruf0QlYjJGo4vKOOZ37as2KBsbYUCMAENIXnFqvW6QHp-85oL4JZadn5TQu5MPCDv41;")
+                .post("/register")
+                .then()
+                .extract().cookie(authCookieName));
+
+
+        step("Подкладываем куки созданного пользователя", () -> {
             open("/Themes/DefaultClean/Content/images/logo.png");
             Cookie authCookie = new Cookie(authCookieName, authCookieValue);
             WebDriverRunner.getWebDriver().manage().addCookie(authCookie);
         });
 
         step("Открываем сайт", () -> {
-            open("");
+            open("/registerresult/1");
         });
 
-        step("Проверяем, что пользователь зарегистрирован", () -> {
-            $(".account").shouldBe(visible).shouldHave(text(email));
-        });
+        step("Проверяем, что пользователь зарегистрирован", this::checkUserCreated);
+    }
+
+    private void checkUserCreated() {
+        $(".result").should(appear).shouldHave(text("Your registration completed"));
+        $(".account").shouldBe(visible).shouldHave(text(email));
     }
 
 }
