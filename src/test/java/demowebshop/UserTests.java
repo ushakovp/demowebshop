@@ -21,6 +21,21 @@ public class UserTests extends TestBase {
     private String firstName;
     private String lastName;
     private String email;
+    private String anotherEmail;
+    private String anotherName;
+    private String anotherLastName;
+
+    private void checkUserCreated() {
+        $(".result").should(appear).shouldHave(text("Your registration completed"));
+        $(".account").shouldBe(visible).shouldHave(text(email));
+    }
+
+    private void checkChangesSaved(String anotherEmail, String anotherName, String anotherLastName) {
+        $("#FirstName").shouldHave(value(anotherName));
+        $("#LastName").shouldHave(value(anotherLastName));
+        $("#Email").shouldHave(value(anotherEmail));
+        $(".account").shouldBe(visible).shouldHave(text(anotherEmail));
+    }
 
     @BeforeEach
     void setUpUser() {
@@ -28,6 +43,9 @@ public class UserTests extends TestBase {
         firstName = faker.name().firstName();
         lastName = faker.name().lastName();
         email = faker.internet().emailAddress();
+        anotherEmail = faker.internet().emailAddress();
+        anotherName = faker.name().firstName();
+        anotherLastName = faker.name().lastName();
     }
 
     @AfterEach
@@ -102,9 +120,108 @@ public class UserTests extends TestBase {
         step("Проверяем, что пользователь зарегистрирован", this::checkUserCreated);
     }
 
-    private void checkUserCreated() {
-        $(".result").should(appear).shouldHave(text("Your registration completed"));
-        $(".account").shouldBe(visible).shouldHave(text(email));
+    @Test
+    @Feature("Редактирование профиля")
+    @Story("Зарегистрированный пользователь может редактировать профиль")
+    @Owner("Pavel Ushakov")
+    @Severity(SeverityLevel.BLOCKER)
+    @Link(value = "Testing", url = "https://demowebshop.tricentis.com/info")
+    @DisplayName("Редактирование профиля UI тест")
+    void userCanModifyProfileTest() {
+        String anotherEmail = faker.internet().emailAddress();
+        String anotherName = faker.name().firstName();
+        String anotherLastName = faker.name().lastName();
+
+        step("Открываем страницу регистрации пользователя", () -> {
+            open("/register");
+        });
+
+        step("Заполняем обязательные поля формы регистрации", () -> {
+            $("#FirstName").setValue(firstName);
+            $("#LastName").setValue(lastName);
+            $("#Email").setValue(email);
+            $("#Password").setValue(password);
+            $("#ConfirmPassword").setValue(password);
+        });
+
+        step("Отправляем заполненную форму на сервер", () -> {
+            $("#register-button").click();
+        });
+
+        step("Открываем профиль", () -> {
+            $(".account").click();
+        });
+
+        step("Заполняем профиль новыми занчениями", () -> {
+            $("#FirstName").setValue(anotherName);
+            $("#LastName").setValue(anotherLastName);
+            $("#Email").setValue(anotherEmail);
+        });
+
+        step("Сохраняем профиль", () -> {
+            $(".save-customer-info-button").click();
+        });
+
+        step("Повторно открываем профиль", () -> {
+            $(".account").click();
+        });
+
+        step("Проверяем, что изменения сохранились", () -> {
+            checkChangesSaved(anotherEmail, anotherName, anotherLastName);
+        });
+    }
+
+    @Test
+    @Feature("Редактирование профиля")
+    @Story("Зарегистрированный пользователь может редактировать профиль")
+    @Owner("Pavel Ushakov")
+    @Severity(SeverityLevel.BLOCKER)
+    @Link(value = "Testing", url = "https://demowebshop.tricentis.com/info")
+    @DisplayName("Редактирование профиля API тест")
+    void userCanModifyProfileAPITest() {
+        String authCookieName = "NOPCOMMERCE.AUTH";
+
+        String authCookieValue = step("Регистрируем пользователя через API ", () -> given()
+                .when()
+                .contentType("application/x-www-form-urlencoded; charset=utf-8")
+                .formParam("__RequestVerificationToken", "10QcxkN4-Gk5PEeZlTrtVTuN7xtnRi_RY4ssN4Kd1kn--wsjFIdx3MtZG3cs6EsIYcWSCd3dIikpNcaAeVkJyMaRx50q_u84GfmcWQFqcqw1")
+                .formParam("FirstName", firstName)
+                .formParam("LastName", lastName)
+                .formParam("Email", email)
+                .formParam("Password", password)
+                .formParam("ConfirmPassword", password)
+                .cookie("__RequestVerificationToken", "at9THwDl4iOCtU40qL9aL87W4x6vnP7C7vDFXJ6VVruf0QlYjJGo4vKOOZ37as2KBsbYUCMAENIXnFqvW6QHp-85oL4JZadn5TQu5MPCDv41;")
+                .post("/register")
+                .then()
+                .extract().cookie(authCookieName));
+
+        step("Подкладываем куки созданного пользователя", () -> {
+            open("/Themes/DefaultClean/Content/images/logo.png");
+            Cookie authCookie = new Cookie(authCookieName, authCookieValue);
+            WebDriverRunner.getWebDriver().manage().addCookie(authCookie);
+        });
+
+        step("Открываем профиль", () -> {
+            open("/customer/info");
+        });
+
+        step("Заполняем профиль новыми занчениями", () -> {
+            $("#FirstName").setValue(anotherName);
+            $("#LastName").setValue(anotherLastName);
+            $("#Email").setValue(anotherEmail);
+        });
+
+        step("Сохраняем профиль", () -> {
+            $(".save-customer-info-button").click();
+        });
+
+        step("Повторно открываем профиль", () -> {
+            $(".account").click();
+        });
+
+        step("Проверяем, что изменения сохранились", () -> {
+            checkChangesSaved(anotherEmail, anotherName, anotherLastName);
+        });
     }
 
 }
