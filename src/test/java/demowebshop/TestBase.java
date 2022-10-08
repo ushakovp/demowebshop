@@ -8,6 +8,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
+import static io.restassured.RestAssured.baseURI;
+
 public class TestBase {
 
     @BeforeAll
@@ -24,6 +26,7 @@ public class TestBase {
 
         Configuration.browserCapabilities = capabilities;
         Configuration.baseUrl = "https://demowebshop.tricentis.com";
+        baseURI = "https://demowebshop.tricentis.com";
         Configuration.browser = System.getProperty("browser_name", "chrome");
         Configuration.browserVersion = System.getProperty("browser_version", "106.0");
         Configuration.browserSize = System.getProperty("browser_size", "1920x1080");
