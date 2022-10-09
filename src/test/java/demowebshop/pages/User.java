@@ -15,10 +15,11 @@ public class User {
     private final SelenideElement submitRegistrationButton = $("#register-button");
     private final SelenideElement openProfileLink = $(".account");
     private final SelenideElement saveProfileLink = $(".save-customer-info-button");
+    private final SelenideElement registrationResult = $(".result");
 
 
     public void checkUserCreated(String email) {
-        $(".result").should(appear).shouldHave(text("Your registration completed"));
+        registrationResult.should(appear).shouldHave(text("Your registration completed"));
         openProfileLink.shouldBe(visible).shouldHave(text(email));
     }
 

@@ -15,6 +15,7 @@ import static com.codeborne.selenide.Selenide.*;
 import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.given;
 
+@DisplayName("UI User tests")
 public class UserTests extends TestBase {
     private final String authCookieName = "NOPCOMMERCE.AUTH";
     private final String verificationTokenName = "__RequestVerificationToken";
@@ -73,7 +74,7 @@ public class UserTests extends TestBase {
             user.sendRegistrationForm();
         });
 
-        step("Отправляем заполненную форму на сервер", () -> {
+        step("Проверяем, что пользователь зарегистрирован", () -> {
             user.checkUserCreated(email);
         });
     }
@@ -111,7 +112,7 @@ public class UserTests extends TestBase {
             open("/registerresult/1");
         });
 
-        step("Открываем сайт", () -> {
+        step("Проверяем, что пользователь зарегистрирован", () -> {
             user.checkUserCreated(email);
         });
     }
